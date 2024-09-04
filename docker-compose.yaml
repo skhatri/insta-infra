@@ -145,6 +145,13 @@ services:
     image: "amundsendev/amundsen-search:${AMUNDSEN_SEARCH_VERSION:-4.0.2}"
     ports:
       - "5001:5000"
+  app:
+    container_name: app
+    image: app
+    ports:
+      - "8080:8080"
+      - "3000:3000"
+
   cassandra:
     command: [-c, /tmp/scripts/init.sh]
     container_name: cassandra-data
@@ -665,8 +672,20 @@ services:
     image: "confluentinc/confluent-local:7.7.0"
     ports:
       - "9092:9092"
+
   keycloak:
-    command: [start-dev, --import-realm]
+    command:
+      - /tmp/setup.sh
+    container_name: keycloak-data
+    depends_on:
+      - keycloak-server
+
+    image: skhatri/jq
+    restart: on-failure
+    volumes:
+      - ./data/keycloak/setup.sh:/tmp/setup.sh
+  keycloak-server:
+    command: [start-dev]
     container_name: keycloak
     depends_on:
       postgres:
